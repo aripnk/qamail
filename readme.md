@@ -40,6 +40,16 @@ docker-compose up -d
 ```
 * Try to open QA Mail in browser to check everything works fine.  
 
+Kubernetes Installation
+------------
+* First need to add label to a node, and the assign a static public IP address
+* Build and push image to container registry
+* Modify the deployment template
+* Deploy the service with the deployment configuration file
+* SSH to the node and do port forwarding 80->30080, 25->32525
+* Add A record and MX Record to DNS
+
+
 Manual installation
 ------------
 * Configure the mail delivery agent.  
