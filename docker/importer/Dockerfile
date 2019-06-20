@@ -7,6 +7,7 @@ RUN mkdir /home/app
 RUN mkdir /home/app/qamail
 RUN touch /home/app/qamail/letter_import.pid
 RUN mkdir /home/app/Maildir
+RUN mkdir /home/app/Maildir/new
 RUN apt-get update
 
 COPY . /home/app/qamail

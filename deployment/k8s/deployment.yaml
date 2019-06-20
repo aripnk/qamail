@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qamail-deployment
+  namespace: qamail
+  labels:
+    app: qamail-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qamail-web
+  template:
+    metadata:
+      labels:
+        app: qamail-web
+    spec:
+      nodeSelector:
+        <NODESELECTOR>
+      containers:
+      - name: qamail-web
+        image: <QAMAILWEBIMAGE>
+        env:
+          - name: hostname
+            value: <HOSTNAME>
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/app/qamail/settings.yml
+          subPath: settings.yml
+      - name: qamail-importer
+        image: <QAMAILIMPORTERIMAGE>
+        env:
+          - name: hostname
+            value: <HOSTNAME>
+        volumeMounts:
+        - name: config-volume
+          mountPath: /home/app/qamail/settings.yml
+          subPath: settings.yml
+      - name: qamail-postfix
+        image: <QAMAILPOSTFIXIMAGE>
+        env:
+          - name: hostname
+            value: <HOSTNAME>
+        ports:
+        - containerPort: 25
+      - name: postgres
+        image:  postgres:9.4.20
+        env:
+          - name: POSTGRES_USER
+            value: qamail
+          - name: POSTGRES_PASSWORD
+            value: qamail
+      volumes:
+        - name: config-volume
+          configMap:
+            name: qamail-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: qamail-config
+  namespace: qamail
+data:
+  settings.yml: |
+    app_root_directory: /home/app/qamail
+    maildir: /home/app/Maildir/
+    domain: <HOSTNAME>
+    outgoing_mail_delivery_method: smtp
+    smtp_port: 25
+    smtp_server_hostname: localhost
+    DB_host: localhost
+    DB_username: qamail
+    DB_password: qamail
+    DB_name: qamail
+    DB_encoding: utf8
+    async_notifications: off
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qamail-web
+  namespace: qamail
+  labels:
+    app: qamail-web
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      nodePort: 30080
+      name: http
+  selector:
+    app: qamail-web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qamail-postfix
+  namespace: qamail
+  labels:
+    app: qamail-web
+spec:
+  type: NodePort
+  ports:
+    - port: 25
+      nodePort: 32525
+      name: smtp
+  selector:
+    app: qamail-web
