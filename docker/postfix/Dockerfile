@@ -11,6 +11,7 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y postfix postfix-pcre rsyslog
 RUN postconf -e "virtual_alias_maps = pcre:/etc/postfix/wildcard.pcre"
 RUN postconf -e "mynetworks = 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, localhost"
+RUN postconf -e "postscreen_upstream_proxy_protocol = haproxy"
 RUN postconf -M smtp/inet="smtp       inet  n       -       n       -       -       smtpd"
 RUN postconf -M smtp/unix="smtp       unix  -       -       n      -       -       smtp"
 COPY ./docker/postfix/entrypoint.sh /home/qamail
